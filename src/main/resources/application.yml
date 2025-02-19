@@ -1,0 +1,8 @@
+naver:
+  api:
+    client-id: "G_scgdRAO_5SFme3SsbI"
+    client-secret: "ijrn_rLkBU"
+    url: "https://openapi.naver.com/v1/search/news.json"
+
+server:
+  port: 9090
