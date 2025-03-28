@@ -1,8 +1,9 @@
-package dev.test.TrendSync;
+package dev.test.TrendSync.service;
 
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,16 +11,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
+import java.util.Optional;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NaverNewsService {
 
-
     private final RestTemplate restTemplate;
-
+    private final ObjectMapper objectMapper;
 
     @Value("${naver.api.client-id}")
     private String clientId;
@@ -30,29 +31,29 @@ public class NaverNewsService {
     @Value("${naver.api.url}")
     private String apiUrl;
 
-    // 컨트롤러에서 호출하지 않고, 서비스에서 직접 실행
-    public String fetchITNews() {
+    public Optional<JsonNode> fetchITNews() {
         try {
-            // **임의로 검색어를 설정 (컨트롤러 입력 없이)**
-            String query = "IT 개발 OR 프로그래밍 OR 인공지능";
-            String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+            String query = "AI";
+            String requestUrl = String.format("%s?query=%s&display=100&sort=date", apiUrl, query);
 
-            // 요청 URL 생성
-            String requestUrl = apiUrl + "?query=" + encodedQuery + "&display=10&sort=date";
-
-            // 요청 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Naver-Client-Id", clientId);
             headers.set("X-Naver-Client-Secret", clientSecret);
 
-            // API 요청 실행
             HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    requestUrl,
+                    HttpMethod.GET,
+                    entity,
+                    String.class
+            );
 
-            return response.getBody();
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            return Optional.ofNullable(jsonNode);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Error occurred while fetching IT news.";
+            log.error("IT 뉴스 조회 중 오류 발생: ", e);
+            return Optional.empty();
         }
     }
 }

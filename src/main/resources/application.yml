@@ -5,4 +5,15 @@ naver:
     url: "https://openapi.naver.com/v1/search/news.json"
 
 server:
-  port: 9090
+  port: 9091
+
+
+
+  # application.yml
+kakao:
+  client-id: c4e79ae4a9131ca930285da22587695f
+  client-secret: your_kakao_client_secret
+  redirect-uri: http://localhost:3000/auth/callback
+
+jwt:
+  secret: your_jwt_secret_key
